@@ -210,8 +210,10 @@ static Clock_Struct periodicClock;
 // GAP - SCAN RSP data (max size = 31 bytes)
 static uint8_t scanRspData[] =
 {
-  // No scan response data provided.
-  0x00 // Placeholder to keep the compiler happy.
+ // Local name
+ 16,
+ GAP_ADTYPE_LOCAL_NAME_COMPLETE,
+ 'P', 'r', 'o', 'j', 'e', 'c', 't', ' ', 'Z', 'e', 'r', 'o', ' ','R','2',
 
 };
 
@@ -227,10 +229,15 @@ static uint8_t advertData[] =
   GAP_ADTYPE_FLAGS,
   DEFAULT_DISCOVERABLE_MODE | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
 
-  // Local name
- 16,
- GAP_ADTYPE_LOCAL_NAME_COMPLETE,
- 'P', 'r', 'o', 'j', 'e', 'c', 't', ' ', 'Z', 'e', 'r', 'o', ' ','R','2',
+  // Transmit power
+  2,
+  GAP_ADTYPE_POWER_LEVEL,
+  0,
+
+  // Primary service
+  17,
+  GAP_ADTYPE_128BIT_MORE,
+  LED_SERVICE_SERV_UUID_BASE128(LED_SERVICE_SERV_UUID)
 
 };
 
@@ -616,11 +623,11 @@ static void ProjectZero_init( void )
     // request from the remote before sending
     // GAPROLE_LINK_PARAM_UPDATE_INITIATE_APP_PARAMS: will send desired parameters as
     // soon as a link has been established with the remote
-    uint8_t enableUpdateRequest = aaa;
-    uint16_t desiredConnTimeout = bbb;    // Units of 10ms - 2000ms / 10ms = 200
-    uint16_t desiredSlaveLatency = c;     // No units = 0
-    uint16_t desiredMinInterval = dd;    // Units of 1.25ms - 75ms / 1.25ms = 60
-    uint16_t desiredMaxInterval = eee; // Units of 1.25ms - 125ms / 1.25ms = 100
+    uint8_t enableUpdateRequest = GAPROLE_LINK_PARAM_UPDATE_INITIATE_APP_PARAMS;
+    uint16_t desiredConnTimeout = 200;    // Units of 10ms - 2000ms / 10ms = 200
+    uint16_t desiredSlaveLatency = 0;     // No units = 0
+    uint16_t desiredMinInterval = 60;    // Units of 1.25ms - 75ms / 1.25ms = 60
+    uint16_t desiredMaxInterval = 100; // Units of 1.25ms - 125ms / 1.25ms = 100
 
     // // Set the Peripheral GAPRole Parameters
     GAPRole_SetParameter(GAPROLE_PARAM_UPDATE_ENABLE, sizeof(uint8_t),
@@ -635,7 +642,7 @@ static void ProjectZero_init( void )
                          &desiredMaxInterval);
 
     // Set advertising interval
-    uint16_t advInt = fff;     // Units of 625us - 152.5ms / 0.625ms = 244
+    uint16_t advInt = 244;     // Units of 625us - 152.5ms / 0.625ms = 244
 
 
 #else
@@ -688,7 +695,9 @@ static void ProjectZero_init( void )
 #ifdef LAB_1        // Lab 1 - Apple Inter-operability
     
     // LAB_1_TODO_2 - Insert device name write permission here
-    
+    uint8 devNamePermission = GATT_PERMIT_READ | GATT_PERMIT_WRITE;
+    GGS_SetParameter(GGS_W_PERMIT_DEVICE_NAME_ATT, sizeof(uint8),
+                     &devNamePermission);
 
 #endif /* LAB_1 */
 

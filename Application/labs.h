@@ -59,7 +59,7 @@ extern "C"
 // Note that there is no #define for Lab 0 - unnecessary
 // Lab 0 - Hardware test, Compile test
 //
-//#define     LAB_1       // Un-comment to include source for Lab 1 - Apple Interoperability
+#define     LAB_1       // Un-comment to include source for Lab 1 - Apple Interoperability
 #ifdef      LAB_1
 //#define     LAB_2       // Un-comment to include source for Lab 2 - Service Configuration
 #ifdef      LAB_2
