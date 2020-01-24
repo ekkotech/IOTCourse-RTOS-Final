@@ -779,6 +779,11 @@ static void ProjectZero_init( void )
     // Clock fires after an initial STARTUP_EVT_PERIOD milliseconds and every
     // PERIODIC_EVT_PERIOD milliseconds after that
     // Convert milliseconds to clock ticks by multiplying by (USEC_PER_MSEC / Clock_tickPeriod)
+     Clock_Params_init(&periodicClockParams);
+     periodicClockParams.arg = PRZ_PERIODIC_EVT;
+     periodicClockParams.period = PERIODIC_EVT_PERIOD * (USEC_PER_MSEC / Clock_tickPeriod);
+     periodicClockParams.startFlag = true;
+     Clock_construct(&periodicClock, periodicClockTimeoutSwiFxn, STARTUP_EVT_PERIOD * (USEC_PER_MSEC / Clock_tickPeriod), &periodicClockParams);
 
 #endif /* LAB_4 */
 
@@ -864,6 +869,11 @@ static void ProjectZero_taskFxn( UArg a0, UArg a1 )
             // LAB_5_TODO
 
             // Insert event handling code here
+            if (events & PRZ_PERIODIC_EVT)
+            {
+                lss_ProcessPeriodicEvent();
+                saveSnvState(SNV_APP_ID, &gSnvState);
+            }
 
 #endif /* LAB_4 */
 
@@ -1740,6 +1750,7 @@ static void periodicClockTimeoutSwiFxn( UArg arg ) {
     // LAB_4_TODO_2
 
     // Insert periodic clock handling code here
+    Event_post(syncEvent, arg);
     
 }
 #endif /* LAB_4 */
@@ -1806,6 +1817,17 @@ static void saveSnvState( uint8_t appId, snv_config_t *pState )
     //
     // Write out snv structure to SNV if it has changed
     //
+    if (gIsSnvDirty == true)
+    {
+        uint8_t result = osal_snv_write(appId, sizeof(snv_config_t), (uint8_t *)pState);
+        if (result == SUCCESS)
+        {
+            gIsSnvDirty = false;
+        }
+        else {
+            Log_info0("ERROR: writing SNV");
+        }
+    }
 
 }
 #endif /* LAB_4 */
