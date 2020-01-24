@@ -644,19 +644,32 @@ static void writeLeds( Semaphore_Handle handle, uint16_t timeout )
     
     // Add handler code here
     // Ensure that both channels are disabled before making any changes
-    
+    if (!(HWREG(UDMA0_BASE + UDMA_O_SETCHANNELEN) & DMA_CHANNEL_SSI_BOTH_M)) {
         // Configure control words
-
+        uint32_t transferCount = ((NUM_LEDS_PER_STRING * NUM_COLOURS * HWORDS_PER_WORD) - 1) << UDMA_XFER_SIZE_S;
+        uint32_t control = ssi0ControlBlock.ui32Control & ~(UDMA_XFER_SIZE_M | UDMA_MODE_M);
+        control |= (transferCount | UDMA_MODE_BASIC);
+        ssi0ControlBlock.ui32Control = control;
+        ssi1ControlBlock.ui32Control = control;
         // Enable uDMA channels
-        
+        HWREG(UDMA0_BASE + UDMA_O_SETCHANNELEN) = DMA_CHANNEL_SSI_BOTH_M;
         // Enable SSI DMA operation
-        
+        HWREGBITW(SSI0_BASE + SSI_O_DMACR, SSI_DMACR_TXDMAE_BITN) = TRUE;
+        HWREGBITW(SSI1_BASE + SSI_O_DMACR, SSI_DMACR_TXDMAE_BITN) = TRUE;
 
         // Pend on semaphore
-        
+        if (handle != NULL) {
+            if (Semaphore_pend(handle, timeout * (MSEC_PER_SEC / Clock_tickPeriod))) {
                 // Ensure that both SSI channels have completed any prior send
                 // Add an additional delay to ensure the the 80us reset time for the SK6812 LEDs is met
-
+                waitOnSsiSendComplete();
+                Task_sleep(SSI_DELAY_100us / Clock_tickPeriod);
+            }
+            else {
+                Log_info0("Semaphore pend timeout");
+            }
+        }
+    }
 
 }
 #endif /* LAB_3 */
