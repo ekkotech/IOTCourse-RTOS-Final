@@ -568,9 +568,13 @@ static void initResources()
 
     // Add initialisation code here
     // Create DMA complete semaphore
+    dmaCompleteSemaParams.mode = Semaphore_Mode_BINARY;
+    Semaphore_construct(&dmaCompleteSema, 0, &dmaCompleteSemaParams);
+    hDmaCompleteSema = Semaphore_handle(&dmaCompleteSema);
 
     // Create Hwi
     // Only need a Hwi for SSI1
+    Hwi_construct(&dmaCompleteHwi, INT_SSI1_COMB, dmaCompleteHwiFxn, NULL, NULL);
  
 }
 #endif /* LAB_3 */
