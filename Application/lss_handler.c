@@ -381,7 +381,9 @@ static void processRGBValueChange( char_data_t *pCharData )
         // LAB_5_TODO
         
         // Insert handler code here
- 
+        bulkUpdateLeds( (rgb_char_t *) pCharData->data );
+        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+
     }
     else {
         Log_info0("Incorrect data size for RGB value change");
