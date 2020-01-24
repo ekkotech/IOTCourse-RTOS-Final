@@ -65,7 +65,7 @@ extern "C"
 #ifdef      LAB_2
 #define     LAB_3       // Un-comment to include source for Lab 3 - LED String Driver Implementation
 #ifdef      LAB_3
-//#define     LAB_4       // Un-comment to include source for Lab 4 - Non-Volatile Memory
+#define     LAB_4       // Un-comment to include source for Lab 4 - Non-Volatile Memory
 #ifdef      LAB_4
 //#define     LAB_5       // Un-comment to include source for Lab 5 - Light Monitor implementation
 #ifdef      LAB_5

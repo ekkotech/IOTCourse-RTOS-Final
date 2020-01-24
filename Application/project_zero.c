@@ -1837,14 +1837,30 @@ static void initSnv(uint8_t appId, snv_config_t *pSnvState)
     // LAB_4_TODO_1
 
     // Insert SNV initialisation code here
+    uint8_t status = osal_snv_read(appId, sizeof(snv_config_t), pSnvState);
 
-
+    if (status == SUCCESS)
+    {
         // SNV read OK, set characteristics
-
-    
+        LssService_SetParameter(LSS_OFFON_ID, LSS_OFFON_LEN_MIN, &pSnvState->offOn);
+        LssService_SetParameter(LSS_RGB_ID, LSS_RGB_LEN_MIN, &pSnvState->colour);
+    }
+    else
+    {
         // Most likely new firmware uploaded
         // Get default values from characteristics; write to SNV
+        uint16_t charLen = LSS_OFFON_LEN_MIN;
+        LssService_GetParameter(LSS_OFFON_ID, &charLen, &pSnvState->offOn);
+        charLen = LSS_RGB_LEN_MIN;
+        LssService_GetParameter(LSS_RGB_ID, &charLen, &pSnvState->colour);
 
+        status = osal_snv_write(appId, sizeof(snv_config_t), pSnvState);
+        if (status != SUCCESS)
+        {
+            Log_info0("ERROR: Unable to write snvState to FLASH");
+        }
+
+    }
 
 }
 #endif /* LAB_4 */
