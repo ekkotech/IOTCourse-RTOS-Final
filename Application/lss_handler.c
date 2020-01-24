@@ -474,23 +474,25 @@ static void initSSI()
     
     // Add initialisation code here
     // Iterate over num SSI channels
-    
+    for (uint8_t idx = 0; idx < SSI_NUM_CHANNELS; ++idx) {
         // Disable SSI channel
-        
+        HWREG(ssi[idx].chAdr + SSI_O_CR1) &= ~SSI_CR1_SSE_M;
         // Set clock pre-scaler to 2 (divides the system clock by 2 to 24MHz)
-        
+        HWREG(ssi[idx].chAdr + SSI_O_CPSR) = SSI_CLOCK_PRESCALE_DIV_2;
         // Configure clock divisor, frame format, data width
-        
+        HWREG(ssi[idx].chAdr + SSI_O_CR0) = (SSI_CLOCK_DIV_6 << SSI_CR0_SCR_S) | SSI_CR0_FRF_TI_SYNC_SERIAL | SSI_CR0_DSS_16_BIT;
 
         // Set up I/O
         // Set up the output pin for each channel
-        
-        
-        
+        uint32_t temp = HWREG(IOC_BASE + (ssi[idx].ioid * sizeof(uint32_t))) & ~(IOC_IOCFG0_PULL_CTL_M | IOC_IOCFG0_PORT_ID_M);
+        temp |= (IOC_IOCFG0_PULL_CTL_DWN | ssi[idx].portId);
+        HWREG(IOC_BASE + (ssi[idx].ioid * sizeof(uint32_t))) = temp;
         // Enable output
-        
-
+        HWREG(GPIO_BASE + GPIO_O_DOE31_0) |= (1 << ssi[idx].ioid);
         // Enable SSI channel
+        HWREG(ssi[idx].chAdr + SSI_O_CR1) |= SSI_CR1_SSE_M;
+
+    }
 
 }
 #endif /* LAB_3 */
