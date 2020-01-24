@@ -525,26 +525,26 @@ static void initDMA()
 
     // Add initialisation code here
     // Disable all channels before making changes
-    
+    HWREG(UDMA0_BASE + UDMA_O_CLEARCHANNELEN) = UDMA_CLEARCHANNELEN_CHNLS_M;
     // Set the base address of the uDMA control table. This is fixed at 0x2000_0400 - mask lower bits as a precaution
-
+    HWREG(UDMA0_BASE + UDMA_O_CTRL) = (DMA_CONFIG_BASE_ADDR & UDMA_CTRL_BASEPTR_M);
     // Enable the uDMA peripheral
-    
-    
+    HWREG(UDMA0_BASE + UDMA_O_CFG) = UDMA_CFG_MASTERENABLE;
 
     // The source, destination addresses and transfer modes for both channels do not change so we can set them up here
-    
-    
-    
-    
+    ssi0ControlBlock.pvSrcEndAddr = (uint32_t *)(pBitStream + (NUM_LEDS_PER_STRING * NUM_COLOURS * HWORDS_PER_WORD) - 1);
+    ssi0ControlBlock.pvDstEndAddr = (uint32_t *)(SSI0_BASE + SSI_O_DR);
+    ssi1ControlBlock.pvSrcEndAddr = (uint32_t *)(pBitStream + (NUM_LED_STRINGS * NUM_LEDS_PER_STRING * NUM_COLOURS * HWORDS_PER_WORD) - 1);
+    ssi1ControlBlock.pvDstEndAddr = (uint32_t *)(SSI1_BASE + SSI_O_DR);
 
     // The control word for both channels is identical
-    
+    uint32_t control = 0;
+    control = (UDMA_DST_INC_NONE | UDMA_SRC_INC_16 | UDMA_SIZE_16 | UDMA_ARB_4);
     
     // This bit-wise AND with zero is to force a read of each control block to keep the compiler happy
     // Without this, the complier thinks that the control blocks are being set but not read hence wasting RAM space
-    
-    
+    ssi0ControlBlock.ui32Control = (ssi0ControlBlock.ui32Control & 0) | control;
+    ssi1ControlBlock.ui32Control = (ssi1ControlBlock.ui32Control & 0) | control;
 
 }
 #endif /* LAB_3 */
