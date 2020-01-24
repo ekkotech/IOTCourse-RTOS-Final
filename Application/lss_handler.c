@@ -691,6 +691,17 @@ static void waitOnSsiSendComplete()
     // LAB_3_TODO_6
     
     // Insert handler code here
+    uint8_t loopCount = 0;
+
+    // Insert handler code here
+    while (!(HWREG(SSI1_BASE + SSI_O_SR) & SSI_SR_TFE_M)) {
+        Task_sleep(SSI_WAIT_ON_TX_EMPTY_DELAY / Clock_tickPeriod);
+        ++loopCount;
+
+        if ((loopCount * SSI_WAIT_ON_TX_EMPTY_DELAY) > SSI_MAX_DELAY ) {
+            break;
+        }
+    }
 
 }
 #endif /* LAB_3 */
