@@ -296,6 +296,12 @@ void lss_ProcessPeriodicEvent()
     // LAB_5_TODO
     
     // Insert handler code here
+    if (isFirstEvent && (gSnvState.offOn == ON))
+    {
+        bulkUpdateLeds( &gSnvState.colour );
+        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+        isFirstEvent = false;
+    }
 
 }
 #endif /* LAB_4 */
@@ -352,7 +358,10 @@ static void processOffOnValueChange( char_data_t *pCharData )
         // LAB_5_TODO
 
         // Insert handler code here
-
+        updateSnvState( pCharData->paramID, pCharData->dataLen, pCharData->data );
+        rgb_char_t *pColour = *((offon_char_t *)pCharData->data) == ON ? &gSnvState.colour : &ledsOff;
+        bulkUpdateLeds( pColour );
+        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
     }
     else {
         Log_info0("Invalid length for offOn data");
@@ -381,8 +390,11 @@ static void processRGBValueChange( char_data_t *pCharData )
         // LAB_5_TODO
         
         // Insert handler code here
-        bulkUpdateLeds( (rgb_char_t *) pCharData->data );
-        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+        updateSnvState( pCharData->paramID, pCharData->dataLen, pCharData->data );
+        if (gSnvState.offOn == ON) {
+            bulkUpdateLeds( (rgb_char_t *)pCharData->data );
+            writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+        }
 
     }
     else {
@@ -725,6 +737,27 @@ static void updateSnvState(uint8_t charId, uint16_t len, uint8_t *pData)
     // LAB_4_TODO_3
 
     // Insert handler code here
+    switch (charId)
+    {
+        case LSS_OFFON_ID:
+            if (len == sizeof(offon_char_t))
+            {
+                gSnvState.offOn = *((offon_char_t *)pData);
+            }
+            break;
+
+        case LSS_RGB_ID:
+            if (len == sizeof(rgb_char_t))
+            {
+                gSnvState.colour = *((rgb_char_t *)pData);
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    gIsSnvDirty = true;
 
 }
 #endif /* LAB_4 */
