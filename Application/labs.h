@@ -61,7 +61,7 @@ extern "C"
 //
 #define     LAB_1       // Un-comment to include source for Lab 1 - Apple Interoperability
 #ifdef      LAB_1
-//#define     LAB_2       // Un-comment to include source for Lab 2 - Service Configuration
+#define     LAB_2       // Un-comment to include source for Lab 2 - Service Configuration
 #ifdef      LAB_2
 //#define     LAB_3       // Un-comment to include source for Lab 3 - LED String Driver Implementation
 #ifdef      LAB_3

@@ -237,7 +237,7 @@ static uint8_t advertData[] =
   // Primary service
   17,
   GAP_ADTYPE_128BIT_MORE,
-  LED_SERVICE_SERV_UUID_BASE128(LED_SERVICE_SERV_UUID)
+  LSS_BASE128_UUID(LSS_SERVICE_SERV_UUID)
 
 };
 
@@ -708,6 +708,8 @@ static void ProjectZero_init( void )
 #ifdef LAB_2        // LAB_2 - Service configuration
  
     // LAB_2_TODO_1 - Add services here
+    LssService_AddService( selfEntity );
+    AlsService_AddService( selfEntity );
 
 #endif /* LAB_2 */
 
@@ -719,6 +721,8 @@ static void ProjectZero_init( void )
 #ifdef LAB_2        // LAB_2 - Service configuration
 
     // LAB_2_TODO_2 - Register App callbacks here
+    LssService_RegisterAppCBs( &user_Lss_ServiceCBs );
+    AlsService_RegisterAppCBs( &user_Als_ServiceCBs );
 
 #endif /* LAB_2 */
 
