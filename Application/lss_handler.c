@@ -425,11 +425,12 @@ static void dmaCompleteHwiFxn( UArg arg )
     
     // Add HwiFxn handler code here
     // Clear uDMA REQDONE bits
-    
-    // Disable SSI DMA    
-    
+    HWREG(UDMA0_BASE + UDMA_O_REQDONE) = DMA_CHANNEL_SSI_BOTH_M;
+    // Disable SSI DMA
+    HWREGBITW(SSI0_BASE + SSI_O_DMACR, SSI_DMACR_TXDMAE_BITN) = FALSE;
+    HWREGBITW(SSI1_BASE + SSI_O_DMACR, SSI_DMACR_TXDMAE_BITN) = FALSE;
     // Notify task DMA done
-    
+    Semaphore_post(hDmaCompleteSema);
 
 }
 #endif /* LAB_3 */
