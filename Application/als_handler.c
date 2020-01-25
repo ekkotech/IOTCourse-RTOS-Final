@@ -423,10 +423,22 @@ static void updateSnvState(uint8_t charId, uint16_t len, uint8_t *pData)
     // Insert handler code here
     switch (charId) {
         case ALS_THRESH_ID:
+            if (len == ALS_THRESH_LEN_MIN)
+            {
+                gSnvState.thresh = *((thresh_char_t *)pData);
+            }
             break;
         case ALS_HYST_ID:
+            if (len == ALS_HYST_LEN_MIN)
+            {
+                gSnvState.hyst = *((hyst_char_t *)pData);
+            }
             break;
         case ALS_LMOFFON_ID:
+            if (len == ALS_LMOFFON_LEN_MIN)
+            {
+                gSnvState.lmOffOn = *((lmoffon_char_t *)pData);
+            }
             break;
     }
 }
@@ -448,12 +460,35 @@ static void updateLuminance()
   // LAB_5_TODO
   
     // Insert read ADC & update code here
+    uint32_t adcValue = 0;
+    uint16_t currentValue = 0;
+    uint16_t currentValueLen = ALS_LUMIN_LEN_MIN;
 
     //
     // Read ADC
     //
+    AUXADCGenManualTrigger();
+    adcValue = AUXADCReadFifo();
+
+    adcValue *= ADC_MULTIPLIER_100;
+    adcValue /= ADC_DIVISOR_476;        // Lux
 
     // Update characteristic if value has changed
+    AlsService_GetParameter( ALS_LUMIN_ID, &currentValueLen, &currentValue);
+
+    if (adcValue != currentValue) {
+        AlsService_SetParameter( ALS_LUMIN_ID, ALS_LUMIN_LEN_MIN, &adcValue);
+        // For the first reading, set gShouldIlluminate based on threshold only
+        if (currentValue == 0)
+        {
+            gShouldIlluminate = adcValue >= gSnvState.thresh ? false : true;
+            Event_post(syncEvent, APP_LUMINANCE_CHANGE_EVT);
+        }
+        else
+        {
+            notifyIfThreshold(adcValue);
+        }
+    }
 
 
 }
@@ -471,6 +506,16 @@ static void notifyIfThreshold(uint16_t lux)
 {
     
     // Insert notify code here
+    if (lux >= (gSnvState.thresh + gSnvState.hyst) && gShouldIlluminate == true)
+    {
+        gShouldIlluminate = false;
+        Event_post(syncEvent, APP_LUMINANCE_CHANGE_EVT);
+    }
+    else if (lux <= (gSnvState.thresh - gSnvState.hyst) && gShouldIlluminate == false)
+    {
+        gShouldIlluminate = true;
+        Event_post(syncEvent, APP_LUMINANCE_CHANGE_EVT);
+    }
 }
 
 #endif /* LAB_5 */

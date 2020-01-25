@@ -59,8 +59,8 @@ extern "C"
 // ADC has an internal voltage reference of 4.3V; ALS has supply voltage of 3.3V
 // Maximum ADC reading is 3.3/4.3 * 4095 = 3142
 // Resistor value can be adjusted to accommodate different Lux ranges
-#define ADC_MULTIPLIER                  100
-#define ADC_DIVISOR                     476
+#define ADC_MULTIPLIER_100              100
+#define ADC_DIVISOR_476                 476
 
 /*********************************************************************
  * TYPEDEFS
@@ -80,7 +80,7 @@ void user_AlsService_ValueChangeHandler(char_data_t *pCharData);
 void user_AlsService_CfgChangeHandler(char_data_t *pCharData);
 void als_Hardware_Init();
 void als_Resource_Init();
-void als_ProcessPeriodicEvent(uint8_t isFirstRun);
+void als_ProcessPeriodicEvent();
 
 /*********************************************************************
 *********************************************************************/

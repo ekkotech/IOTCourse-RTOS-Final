@@ -125,12 +125,13 @@
 #define PRZ_PERIODIC_EVT                      Event_Id_02
 #define PRZ_APP_MSG_EVT                       Event_Id_03
 
-#define PRZ_ALL_EVENTS                       (PRZ_ICALL_EVT        | \
-                                              PRZ_QUEUE_EVT        | \
-                                              PRZ_STATE_CHANGE_EVT | \
-                                              PRZ_CHAR_CHANGE_EVT  | \
-                                              PRZ_PERIODIC_EVT     | \
-                                              PRZ_APP_MSG_EVT)
+#define PRZ_ALL_EVENTS                       (PRZ_ICALL_EVT         | \
+                                              PRZ_QUEUE_EVT         | \
+                                              PRZ_STATE_CHANGE_EVT  | \
+                                              PRZ_CHAR_CHANGE_EVT   | \
+                                              PRZ_PERIODIC_EVT      | \
+                                              PRZ_APP_MSG_EVT       | \
+                                              APP_LUMINANCE_CHANGE_EVT)
 
 // Set the register cause to the registration bit-mask
 #define CONNECTION_EVENT_REGISTER_BIT_SET(registerCause) (connectionEventRegisterCauseBitMap |= registerCause )
@@ -155,7 +156,9 @@
 uint8_t gIsSnvDirty = false;
 snv_config_t gSnvState = { .offOn = 0,
                            .colour = { .red = 0, .green = 0, .blue = 0},
-                           // Add other vars here as needed
+                           .thresh = 0,
+                           .hyst = 0,
+                           .lmOffOn = 0
                          };
 
 #endif /* LAB_4 */
@@ -872,6 +875,7 @@ static void ProjectZero_taskFxn( UArg a0, UArg a1 )
             if (events & PRZ_PERIODIC_EVT)
             {
                 lss_ProcessPeriodicEvent();
+                als_ProcessPeriodicEvent();
                 saveSnvState(SNV_APP_ID, &gSnvState);
             }
 
@@ -881,6 +885,10 @@ static void ProjectZero_taskFxn( UArg a0, UArg a1 )
             
             // LAB_5_TODO
             // Insert light level handling code here
+            else if (events & APP_LUMINANCE_CHANGE_EVT)
+            {
+                lss_ProcessLightLevelChange();
+            }
 
 #endif /* LAB_5 */
 
@@ -1866,6 +1874,9 @@ static void initSnv(uint8_t appId, snv_config_t *pSnvState)
         // SNV read OK, set characteristics
         LssService_SetParameter(LSS_OFFON_ID, LSS_OFFON_LEN_MIN, &pSnvState->offOn);
         LssService_SetParameter(LSS_RGB_ID, LSS_RGB_LEN_MIN, &pSnvState->colour);
+        AlsService_SetParameter(ALS_THRESH_ID, ALS_THRESH_LEN_MIN, &pSnvState->thresh);
+        AlsService_SetParameter(ALS_HYST_ID, ALS_HYST_LEN_MIN, &pSnvState->hyst);
+        AlsService_SetParameter(ALS_LMOFFON_ID, ALS_LMOFFON_LEN_MIN, &pSnvState->lmOffOn);
     }
     else
     {
@@ -1875,6 +1886,12 @@ static void initSnv(uint8_t appId, snv_config_t *pSnvState)
         LssService_GetParameter(LSS_OFFON_ID, &charLen, &pSnvState->offOn);
         charLen = LSS_RGB_LEN_MIN;
         LssService_GetParameter(LSS_RGB_ID, &charLen, &pSnvState->colour);
+        charLen = ALS_THRESH_LEN_MIN;
+        AlsService_GetParameter(ALS_THRESH_ID, &charLen, &pSnvState->thresh);
+        charLen = ALS_HYST_LEN_MIN;
+        AlsService_GetParameter(ALS_HYST_ID, &charLen, &pSnvState->hyst);
+        charLen = ALS_LMOFFON_LEN_MIN;
+        AlsService_GetParameter(ALS_LMOFFON_ID, &charLen, &pSnvState->lmOffOn);
 
         status = osal_snv_write(appId, sizeof(snv_config_t), pSnvState);
         if (status != SUCCESS)

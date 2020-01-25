@@ -142,7 +142,7 @@ static rgb_char_t ledsOff = { .green = 0, .red = 0, .blue = 0 }; // Utility for 
 
 #ifdef LAB_4        // LAB_4 - Non-Volatile Memory
 // Used to trigger setting of LEDs on start-up
-static uint8_t isFirstEvent = true;
+//static uint8_t isFirstEvent = true;
 
 #endif /* LAB_4  */
 
@@ -296,12 +296,12 @@ void lss_ProcessPeriodicEvent()
     // LAB_5_TODO
     
     // Insert handler code here
-    if (isFirstEvent && (gSnvState.offOn == ON))
-    {
-        bulkUpdateLeds( &gSnvState.colour );
-        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
-        isFirstEvent = false;
-    }
+//    if (isFirstEvent && (gSnvState.offOn == ON))
+//    {
+//        bulkUpdateLeds( &gSnvState.colour );
+//        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+//        isFirstEvent = false;
+//    }
 
 }
 #endif /* LAB_4 */
@@ -321,6 +321,11 @@ void lss_ProcessLightLevelChange()
 {
     // Insert light level change code here
     // Only need to consider light level changes if master LED and LM off/on switches are on
+    if (gSnvState.offOn == ON && gSnvState.lmOffOn == ON)
+    {
+        bulkUpdateLeds( gShouldIlluminate == true ? &gSnvState.colour : &ledsOff);
+        writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+    }
 
 }
 #endif /* LAB_5 */
@@ -359,7 +364,14 @@ static void processOffOnValueChange( char_data_t *pCharData )
 
         // Insert handler code here
         updateSnvState( pCharData->paramID, pCharData->dataLen, pCharData->data );
-        rgb_char_t *pColour = *((offon_char_t *)pCharData->data) == ON ? &gSnvState.colour : &ledsOff;
+
+        rgb_char_t *pColour = &ledsOff;
+
+        if (canModifyLeds())
+        {
+            pColour = &gSnvState.colour;
+        }
+
         bulkUpdateLeds( pColour );
         writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
     }
@@ -391,9 +403,10 @@ static void processRGBValueChange( char_data_t *pCharData )
         
         // Insert handler code here
         updateSnvState( pCharData->paramID, pCharData->dataLen, pCharData->data );
-        if (gSnvState.offOn == ON) {
-            bulkUpdateLeds( (rgb_char_t *)pCharData->data );
-            writeLeds( hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS );
+
+        if (canModifyLeds()) {
+            bulkUpdateLeds(&gSnvState.colour);
+            writeLeds(hDmaCompleteSema, LSS_DEFAULT_PEND_TIMEOUT_MS);
         }
 
     }
