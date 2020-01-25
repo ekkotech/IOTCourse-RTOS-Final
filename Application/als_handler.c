@@ -386,13 +386,14 @@ static void initADC(void) {
     // The following API calls are Driverlib-level calls
     // Refer to API sections AUX - Auxiliary Domain (WUC and ADC)
     //
-    // Enable to clock to ADI, ANAIF and ADC
-
+    // Enable clocks: ADI, ANAIF and ADC
+    AUXWUCClockEnable(AUX_WUC_ADI_CLOCK | AUX_WUC_ANAIF_CLOCK | AUX_WUC_ADC_CLOCK);
     // Disable the ADC before making any changes (clocks have to be enabled beforehand)
-
+    AUXADCDisable();
     // Set up AUXIO7 as the input - AUXIO7 has a fixed mapping to DIO23
-
-
+    AUXADCSelectInput(ADC_COMPB_IN_AUXIO7);
+    // Configure in async mode, manual conversion trigger
+    AUXADCEnableAsync(AUXADC_REF_FIXED, AUXADC_TRIGGER_MANUAL);
 
 }
 #endif /* LAB_5 */

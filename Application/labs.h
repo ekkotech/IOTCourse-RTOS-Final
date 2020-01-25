@@ -67,7 +67,7 @@ extern "C"
 #ifdef      LAB_3
 #define     LAB_4       // Un-comment to include source for Lab 4 - Non-Volatile Memory
 #ifdef      LAB_4
-//#define     LAB_5       // Un-comment to include source for Lab 5 - Light Monitor implementation
+#define     LAB_5       // Un-comment to include source for Lab 5 - Light Monitor implementation
 #ifdef      LAB_5
 //#define     LAB_6       // Un-comment to include source for Lab 6 - Random Fader Implementation
 #ifdef      LAB_6
